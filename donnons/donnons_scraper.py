@@ -1,6 +1,8 @@
 
 import requests, random
 from bs4 import BeautifulSoup
+import csv
+
 
 # to pass through anti-scraper
 user_agent_lst = [
@@ -15,37 +17,35 @@ user_agent = user_agent_lst[random.randint(0,len(user_agent_lst)-1)]
 headers =  {'user-agent': user_agent}
 
 response = requests.get("https://donnons.org/annonces/Haute-Savoie", headers=headers)
-
+# print(response)
 soup = BeautifulSoup(response.content, 'html.parser')
-
+# print(soup)
 # print(soup.find_all("article"))
-page_count = soup.find(class_= "page-count").text
-nb_pages = page_count.replace('Page 1 de ', "")
-# print(nb_pages)
+page_count = soup.find(class_= "num-page").text
+nb_pages = page_count.replace('Page 1 / ', "")
+
 
 # to store all article 
-article_lst = []
+# article_lst = []
+with open('donnon_list_of_ads.csv', 'w') as file:
 
-for page_number in range(1,int(nb_pages)+1) : 
-    # print(page_number)
-    # print(f"https://keepinuse.ch/annonces/page/{page_number}/")
-    response = requests.get(f"https://keepinuse.ch/annonces/page/{page_number}/", headers=headers)
-    soup = BeautifulSoup(response.content, 'html.parser')
+    for page_number in range(1,int(nb_pages)+1) : 
+        response = requests.get(f"https://donnons.org/annonces/Haute-Savoie?page={page_number}/", headers=headers)
+        soup = BeautifulSoup(response.content, 'html.parser')
 
-    article = soup.find_all("article")
-    # print(article)
-    for art in article:
-        article_h2 = art.h2
-        ad_title = article_h2.text
-        ad_link = article_h2.find('a', href=True)['href']
-        # print(ad_link)
-        ad_localisation = art.find_all("li")
-        ad_address = ad_localisation[-1].text
-        ad_city = ad_address.split(' ')[-1]
-        ad_description = art.find_all(class_="entry-content subheader")
-        # article_lst.append((ad_title, ad_city))
-        article_lst.append((ad_title, ad_city, ad_link))
+        article = soup.find_all(class_="lst-annonce")
+        for art in article:
+            # print(art['href'])
+            ad_title = art.h2.text
+            # ad_link = article_h2.find('a', href=True)['href']
+            ad_category = art.find(class_="categorie").text
+            ad_city = art.find(class_="city").text
+            ad_link = "https://donnons.org" + str(art['href']) 
+            # print(ad_link)
+            data = [ad_title, ad_city.strip(), ad_category, ad_link]
+            
+            writer = csv.writer(file)
+            writer.writerow(data)
 
-for j in article_lst:
-    print(j[0] + ' \t\t ' + j[1] + ' \t\t ' + j[2])
-#     print(j[0] + ' ; ' + j[1] )
+# for j in article_lst:
+#     print(j[0] + ' \t\t ' + j[1] + ' \t\t ' + j[2])
