@@ -27,7 +27,8 @@ nb_pages = page_count.replace('Page 1 / ', "")
 
 # to store all article 
 # article_lst = []
-with open('donnon_list_of_ads.csv', 'w') as file:
+cities = set()
+with open('list_of_ads_donnons.csv', 'w') as file:
 
     for page_number in range(1,int(nb_pages)+1) : 
         response = requests.get(f"https://donnons.org/annonces/Haute-Savoie?page={page_number}/", headers=headers)
@@ -35,17 +36,22 @@ with open('donnon_list_of_ads.csv', 'w') as file:
 
         article = soup.find_all(class_="lst-annonce")
         for art in article:
-            # print(art['href'])
             ad_title = art.h2.text
-            # ad_link = article_h2.find('a', href=True)['href']
             ad_category = art.find(class_="categorie").text
             ad_city = art.find(class_="city").text
             ad_link = "https://donnons.org" + str(art['href']) 
-            # print(ad_link)
+
+            cities.add(ad_city.strip())
+
             data = [ad_title, ad_city.strip(), ad_category, ad_link]
-            
+            # write in csv file
             writer = csv.writer(file)
             writer.writerow(data)
 
 # for j in article_lst:
 #     print(j[0] + ' \t\t ' + j[1] + ' \t\t ' + j[2])
+
+with open('cities_lst.txt', 'w') as file:
+    for city in cities:
+        file.write(city + '\n')
+# print(cities)
