@@ -1,5 +1,7 @@
 /lbc/*
 /donnons/cities_lst.txt
+/donnons/lst_ads_tabular.csv
+/donnons/lst_ads.txt
 /donnons/env/
-/keepinuse/env/
+/keepinuse/*
 test.txt
